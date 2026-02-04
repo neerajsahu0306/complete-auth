@@ -17,6 +17,7 @@ function ResetPassword() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
@@ -112,21 +113,70 @@ function ResetPassword() {
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 relative">
             <Input
               label="New Password"
-              type="password"
-              placeholder="Strong password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter new password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+              className="pr-10"
             />
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-zinc-500 hover:text-zinc-400 transition-colors duration-300 ease-out cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {!showPassword ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-eye-closed"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M21 9c-2.4 2.667 -5.4 4 -9 4c-3.6 0 -6.6 -1.333 -9 -4" />
+                  <path d="M3 15l2.5 -3.8" />
+                  <path d="M21 14.976l-2.492 -3.776" />
+                  <path d="M9 17l.5 -4" />
+                  <path d="M15 17l-.5 -4" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-eye"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                  <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                </svg>
+              )}
+            </button>
             <p className="text-[10px] text-zinc-600 pl-1 leading-relaxed">
-              * Must include uppercase, number & special char.
+              must include 8+ chars, Upper, Lower, Number & Special. char.
             </p>
           </div>
 
-          <Button type="submit" loading={loading}>
+          <Button
+            type="submit"
+            loading={loading}
+            className=" bg-transparent text-white border border-white hover:bg-white/90 hover:text-black"
+          >
             Reset Password
           </Button>
         </form>

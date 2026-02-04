@@ -79,19 +79,19 @@ function ForgotPassword() {
             <Input
               label="Email"
               type="email"
-              placeholder="name@gmail.com"
+              placeholder="example@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <p className="text-[10px] text-zinc-600 pl-1">
-              * Please use your{" "}
-              <span className="text-zinc-500 font-medium">@gmail.com</span>{" "}
-              address.
-            </p>
+            
           </div>
 
-          <Button type="submit" loading={loading}>
+          <Button
+            type="submit"
+            loading={loading}
+            className="bg-transparent text-white border border-white hover:bg-white/90 hover:text-black"
+          >
             Send Reset Code
           </Button>
         </form>
@@ -99,7 +99,7 @@ function ForgotPassword() {
         <div className="mt-8 text-center">
           <Link
             to="/sign-in"
-            className="text-sm text-zinc-500 hover:text-white transition-colors"
+            className="text-sm text-zinc-500 hover:text-white transition-colors font-sans duration-300 ease-out"
           >
             ← Back to Login
           </Link>

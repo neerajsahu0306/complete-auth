@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import Home from "./pages/Home"
 import AuthLayout from "./layouts/AuthLayout"
 import MainLayout from "./layouts/MainLayout"
+import Loader from "./uiComponents/Loader"
 
 export {
     Footer,
@@ -15,5 +16,6 @@ export {
     Dashboard,
     Home,
     AuthLayout,
-    MainLayout
+    MainLayout,
+    Loader
 }

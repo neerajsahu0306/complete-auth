@@ -41,7 +41,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+    <div className="flex justify-center items-center min-h-screen ">
       {/* Animated Welcome Message */}
       <h1 className="text-3xl md:text-5xl font-bold mb-8 text-center animate-fade-in-up bg-linear-to-r from-white to-zinc-500 bg-clip-text text-transparent">
         {welcomeMessage}

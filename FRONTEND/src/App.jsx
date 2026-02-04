@@ -1,6 +1,6 @@
 import React ,{ useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import {MainLayout} from "./components/index"
+import {MainLayout, Loader} from "./components/index"
 import {useAuthStore} from "./store/authStore"
 import {authService} from "./auth/index"
 
@@ -33,35 +33,30 @@ function App() {
 
   if (isCheckingSession) {
     return (
-      <div className="flex justify-center items-center h-screen bg-black text-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-t-2 border-white rounded-full animate-spin"></div>
-          <p className="animate-pulse text-zinc-500 text-sm tracking-widest">
-            LOADING SESSION...
-          </p>
-        </div>
-      </div>
+    <>
+    <Loader/>
+    </>
     );
   }
 
   return (
     <>
-      <div className="min-h-screen w-full bg-black relative overflow-hidden">
+      <div className="min-h-screen w-full bg-black relative">
+        {/* Stellar Mist */}
         <div
-          className="absolute inset-0 z-0 pointer-events-none"
+          className="absolute inset-0 z-0"
           style={{
             background: `
-       radial-gradient(
-         circle at top,
-         rgba(255, 255, 255, 0.08) 0%,
-         rgba(255, 140, 250, 0.08) 20%,
-         rgba(0, 0, 0, 0.0) 60%
-       )
+       radial-gradient(ellipse 140% 50% at 15% 60%, rgba(124, 58, 237, 0.11), transparent 48%),
+       radial-gradient(ellipse 90% 80% at 85% 25%, rgba(245, 101, 101, 0.09), transparent 58%),
+       radial-gradient(ellipse 120% 65% at 40% 90%, rgba(34, 197, 94, 0.13), transparent 52%),
+       radial-gradient(ellipse 100% 45% at 70% 5%, rgba(251, 191, 36, 0.07), transparent 42%),
+       radial-gradient(ellipse 80% 75% at 90% 80%, rgba(168, 85, 247, 0.10), transparent 55%),
+       #000000
      `,
           }}
         />
-        {/* Your Content Here */}
-
+        {/* Your Content/Components */}
         <MainLayout>
           <Outlet />
         </MainLayout>
@@ -71,3 +66,5 @@ function App() {
 }
 
 export default App
+
+

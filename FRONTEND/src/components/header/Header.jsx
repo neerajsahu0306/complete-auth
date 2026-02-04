@@ -22,14 +22,14 @@ function Header() {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl transition-all duration-300">
+    <header className="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur-lg transition-all duration-300">
       <div className="container mx-auto px-6 h-16 flex justify-between items-center">
         {/* Logo */}
         <Link
           to="/"
           className="text-lg font-semibold tracking-tight text-white transition-opacity duration-300 hover:opacity-80"
         >
-          Nebula<span className="text-zinc-500">Auth</span>
+          <span className="text-zinc-500">Auth</span>
         </Link>
 
         {/* Navigation */}
@@ -68,10 +68,10 @@ function Header() {
               <Link
                 to="/sign-up"
                 className="
-                                  bg-white text-black px-5 py-2 rounded-full 
+                                    px-5 py-2 rounded-3xl
                                   transition-all duration-300 ease-out
-                                  hover:bg-zinc-200 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] 
-                                  active:scale-95
+                                   hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] 
+                                  active:scale-95 bg-transparent text-white border border-white hover:bg-white/90 hover:text-black hover:scale-105
                               "
               >
                 Sign Up

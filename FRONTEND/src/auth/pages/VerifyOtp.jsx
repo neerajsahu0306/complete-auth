@@ -168,7 +168,12 @@ function VerifyOtp() {
             />
           </div>
 
-          <Button type="submit" loading={loading} disabled={otp.length !== 6}>
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={otp.length !== 6}
+            className="bg-transparent text-white border border-white hover:bg-white/90 hover:text-black"
+          >
             Verify & Login
           </Button>
         </form>
