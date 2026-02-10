@@ -1,5 +1,5 @@
 import React ,{ useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import {MainLayout, Loader} from "./components/index"
 import {useAuthStore} from "./store/authStore"
 import {authService} from "./auth/index"
@@ -13,7 +13,14 @@ function App() {
 
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
+  const location = useLocation();
+
   useEffect(() => {
+
+    if (location.pathname.includes("/auth/callback")) {
+      setIsCheckingSession(false);
+      return;
+  }
     const checkSession = async () => {
       try {
         const response = await authService.getCurrentUser();
@@ -29,7 +36,7 @@ function App() {
       }
     };
     checkSession();
-  }, [setAuth, logout]);
+  }, [setAuth, logout, location.pathname]);
 
   if (isCheckingSession) {
     return (

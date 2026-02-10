@@ -87,6 +87,12 @@ public class RefreshTokenService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public RefreshToken validateAndGetToken(String rawToken) {
+
+        //  Prevent the 500 NullPointerException
+        if (rawToken == null || rawToken.isEmpty()) {
+            throw new TokenExpiredException("Refresh token cookie missing");
+        }
+
         String tokenHash = hashToken(rawToken);
 
         RefreshToken refreshToken = refreshTokenRepo.findByTokenHash(tokenHash)
