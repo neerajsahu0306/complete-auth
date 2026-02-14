@@ -6,6 +6,7 @@ import com.example.authpractice.exceptions.TokenExpiredException;
 import com.example.authpractice.repositories.RefreshTokenRepo;
 
 import com.example.authpractice.security.JwtService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import java.util.HexFormat;
  * we delete the old token and issue a completely new one.
  */
 @Service
+@Slf4j
 public class RefreshTokenService {
 
     private final RefreshTokenRepo  refreshTokenRepo;
@@ -51,6 +53,7 @@ public class RefreshTokenService {
             byte[] hash = md.digest(token.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
+            log.error("Crypto Error: Failed to initialize SHA-256 digest", e);
             throw new RuntimeException("Error hashing token", e);
         }
     }
@@ -68,6 +71,7 @@ public class RefreshTokenService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String createRefreshToken(User user) {
+        log.info("Session: Generating new refresh token for user: {}", user.getEmail());
         String rawToken = jwtService.generateRefreshToken(user.getEmail());
 
         String tokenHash = hashToken(rawToken);
@@ -77,6 +81,7 @@ public class RefreshTokenService {
         refreshToken.setTokenHash(tokenHash);
         refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7));
         refreshTokenRepo.save(refreshToken);
+        log.info("Session: New token created and hashed. Expiry set to: {}", refreshToken.getExpiresAt());
         return rawToken;
     }
 
@@ -90,20 +95,27 @@ public class RefreshTokenService {
 
         //  Prevent the 500 NullPointerException
         if (rawToken == null || rawToken.isEmpty()) {
+            log.warn("Session Failure: Missing refresh token in request");
             throw new TokenExpiredException("Refresh token cookie missing");
         }
 
         String tokenHash = hashToken(rawToken);
 
-        RefreshToken refreshToken = refreshTokenRepo.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new TokenExpiredException("Invalid refresh token"));
-
-        // If found but expired, clean it up immediately.
-        if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            refreshTokenRepo.deleteByTokenHash(tokenHash);
-            throw new TokenExpiredException("Refresh token expired");
-        }
-        return refreshToken;
+        return refreshTokenRepo.findByTokenHash(tokenHash)
+                .map(token -> {
+                    if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+                        log.warn("Session Failure: Token expired for user: {}", token.getUser().getEmail());
+                        refreshTokenRepo.deleteByTokenHash(tokenHash);
+                        throw new TokenExpiredException("Refresh token expired");
+                    }
+                    log.info("Session: Token validated for user: {}", token.getUser().getEmail());
+                    return token;
+                })
+                .orElseThrow(() -> {
+                    // LOG: If a token hash isn't found, it might be a malicious reuse attempt
+                    log.warn("Security Alert: Invalid or reused token hash detected!");
+                    return new TokenExpiredException("Invalid refresh token");
+                });
     }
 
     /**
@@ -118,9 +130,11 @@ public class RefreshTokenService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String rotateRefreshToken(String oldRawToken, User user) {
+        log.info("Session: Rotating token for user: {}", user.getEmail());
         validateAndGetToken(oldRawToken); // Ensure old one exists and is valid
         String tokenHash= hashToken(oldRawToken);
         refreshTokenRepo.deleteByTokenHash(tokenHash); // delete the old one
+        log.info("Session: Old token 'burned' successfully for {}", user.getEmail());
         return createRefreshToken(user); // issue a new one
     }
 
@@ -129,18 +143,26 @@ public class RefreshTokenService {
     public void revokeToken(String rawToken) {
         String tokenHash = hashToken(rawToken);
         refreshTokenRepo.deleteByTokenHash(tokenHash);
+        log.info("Session: Single token revoked (Logout)");
     }
 
     // "Nuclear Option": Logs the user out of ALL devices (Phone, Laptop, etc).
     //useful if admin wants to revoke all the sessions of that particular user
     @Transactional
     public void revokeAllTokensOfUser(User user) {
+        log.info("Security: Revoking ALL sessions for user: {}", user.getEmail());
         refreshTokenRepo.findByUser(user).forEach(refreshTokenRepo::delete);
+        log.info("Security: Global logout complete for {}", user.getEmail());
     }
 
     // Janitor task to clean up dead rows.
     @Transactional
     public void cleanExpiredTokens() {
-       refreshTokenRepo.deleteByExpiresAtBefore(LocalDateTime.now());
+        log.info("Purging expired refresh tokens from database...");
+        try {
+            refreshTokenRepo.deleteByExpiresAtBefore(LocalDateTime.now());
+            log.info("Expired token cleanup finished.");
+        } catch (Exception e) {
+            log.error("Failed to clean up refresh tokens: {}", e.getMessage(), e);        }
     }
 }

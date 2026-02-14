@@ -1,10 +1,14 @@
 package com.example.authpractice.services;
 
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.logging.Logger;
 
 
 /**
@@ -19,7 +23,10 @@ import org.springframework.stereotype.Service;
  * so the Controller can return "Success" immediately.
  */
 @Service
+@Slf4j
 public class EmailService {
+
+
 
     private final JavaMailSender javaMailSender;
 
@@ -42,6 +49,7 @@ public class EmailService {
     @Async("taskExecutor")
     public void sendOTPEmail(String toEmail, String otp) {
         try {
+            log.info("Email Thread: Preparing to send OTP to {}", toEmail);
             SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
             simpleMailMessage.setFrom(fromEmail);
             simpleMailMessage.setTo(toEmail);
@@ -51,13 +59,12 @@ public class EmailService {
                     "\n\nIf you didn't request this, please ignore this email.");
 
             javaMailSender.send(simpleMailMessage);
+            log.info("Email Thread: OTP successfully delivered to {}", toEmail);
 
         } catch (RuntimeException e) {
             // If email fails (e.g., bad internet, daily quota exceeded), we log it.
             // Since this is async, the user won't see an error page, but they won't get the email.
-            // In a pro app, you might want to retry this or log to a monitoring service.
-            System.err.println("Failed to send OTP to " + toEmail + ": " + e.getMessage());
-
+            log.error("Email Thread Error: Failed to send OTP to {}. Reason: {}", toEmail, e.getMessage(), e);
         }
     }
 
@@ -69,6 +76,7 @@ public class EmailService {
     @Async("taskExecutor")
     public void sendWelcomeMail(String toEmail) {
         try {
+            log.info("Email Thread: Sending Welcome mail to {}", toEmail);
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
@@ -76,10 +84,10 @@ public class EmailService {
             message.setText("Thank you for verifying your account. Welcome aboard!");
 
             javaMailSender.send(message);
+            log.info("Email Thread: Welcome email delivered to {}", toEmail);
 
         } catch (RuntimeException e) {
-            System.err.println("Failed to send welcome email to " + toEmail + ": " + e.getMessage());
-        }
+            log.error("Email Thread Error: Welcome mail failed for {}. Error: {}", toEmail, e.getMessage(), e);        }
     }
 
 

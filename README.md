@@ -320,6 +320,13 @@ When Google redirects back to our app, it sends a one-time code or token in the 
 * **Scenario:** A user attempts to type letters into the OTP field.
 * **Fix:** The `VerifyOtp.jsx` component implements a regex mask: `value.replace(/\D/g, "")`. It is programmatically impossible for the user to enter non-numeric characters, preventing validation errors before they occur.
 
+---
+
+###  New Security Updates 
+* **IP-Based Rate Limiting:** Implemented `Bucket4j` to limit users to **10 requests per minute**, neutralizing brute-force and DDoS attempts.
+* **Security Event Logging:** Added structured logging for critical security events (e.g., `RATE_LIMIT_HIT`), allowing for real-time monitoring of suspicious activity.
+
+---
 
 ##  Setup & Configuration
 
