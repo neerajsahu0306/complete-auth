@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +28,7 @@ import java.util.List;
  * 4. If valid, we manually tell Spring Security: "This user is logged in. Let them pass."
  */
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
@@ -64,6 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String userId = jwtService.extractUserId(token);
                     String role = jwtService.extractRole(token);
 
+                    log.debug("JWT: Valid token for {}. Setting security context with Role: {}", email, role);
+
                     // Convert Role string (USER) to Spring Authority (ROLE_USER)
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
 
@@ -75,6 +79,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // Step 5: Put the ticket in the Security Context
                     // Now, for the rest of this request, Spring knows who this user is.
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                } else {
+                    log.warn("JWT: Invalid or Expired token provided for email: {}", email);
                 }
             }
         } catch (Exception e) {
@@ -83,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Log the error but DO NOT throw it.
             // Ensure the context is clear so they are treated as anonymous.
             SecurityContextHolder.clearContext();
-             System.err.println("JWT Verification Failed: " + e.getMessage()); // Optional debug
+            log.error("JWT Security Error: Verification failed on path: {} - Error: {}", request.getRequestURI(), e.getMessage(), e);
         }
         // Continue the request chain
         filterChain.doFilter(request, response);

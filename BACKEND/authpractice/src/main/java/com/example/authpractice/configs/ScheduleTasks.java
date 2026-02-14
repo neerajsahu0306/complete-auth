@@ -3,6 +3,7 @@ package com.example.authpractice.configs;
 import com.example.authpractice.services.OTPService;
 import com.example.authpractice.services.RefreshTokenService;
 import com.example.authpractice.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
  */
 
 @Component
+@Slf4j
 public class ScheduleTasks {
     private final OTPService otpService;
     private final RefreshTokenService refreshTokenService;
@@ -44,11 +46,14 @@ public class ScheduleTasks {
 
     @Scheduled(fixedRate = 3600000)
     public void cleanupExpiredData() {
+        log.info(" Starting cleanup of expired OTPs and Refresh Tokens");
+
         try {
             otpService.cleanExpiredOTPs();
             refreshTokenService.cleanExpiredTokens();
+            log.info(" Database cleanup finished successfully");
         } catch (Exception e) {
-            System.err.println("Failed to clean up expired data at time: " + LocalDateTime.now() + e.getMessage());
+            log.error("Janitor Job Error: Failed to clean expired data. Check DB connection. {}", e.getMessage(), e);
         }
     }
 
@@ -64,6 +69,12 @@ public class ScheduleTasks {
 
     @Scheduled(fixedRate = 86400000)
     public void cleanupUsers() {
-        userService.cleanUnverifiedUsers();
+        log.info(" Starting daily removal of unverified/stale users");
+        try {
+            userService.cleanUnverifiedUsers();
+            log.info(" Daily user cleanup completed");
+        } catch (Exception e) {
+            log.error(" Daily user cleanup failed! Reason: {}", e.getMessage(), e);
+        }
     }
 }

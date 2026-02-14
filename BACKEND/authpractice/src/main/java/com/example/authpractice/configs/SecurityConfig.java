@@ -3,6 +3,7 @@ package com.example.authpractice.configs;
 
 import com.example.authpractice.security.JwtAuthenticationFilter;
 import com.example.authpractice.security.OAuthSuccessHandler;
+import com.example.authpractice.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -36,12 +37,12 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuthSuccessHandler oAuthSuccessHandler;
+    private final RateLimitFilter rateLimitFilter;
 
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, OAuthSuccessHandler oAuthSuccessHandler) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, OAuthSuccessHandler oAuthSuccessHandler, RateLimitFilter rateLimitFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-
         this.oAuthSuccessHandler = oAuthSuccessHandler;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     /**
@@ -72,7 +73,7 @@ public class SecurityConfig {
                 // 4. Authorization Rules (The VIP List):
                 .authorizeHttpRequests(auth -> auth
                         // Public routes: Login, Signup, OAuth, etc.
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**", "/actuator/health").permitAll()
                         // Admin only routes
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Everything else requires a valid token
@@ -88,8 +89,11 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2.successHandler(oAuthSuccessHandler))
 
                 // 7. Custom Filter Injection:
+
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 // Add our 'JwtAuthenticationFilter' BEFORE the standard Username/Password check.
                 // This allows us to log users in via Token before Spring tries to look for a password.
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
